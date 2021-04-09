@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- USER만 있음 -->
+<mapper namespace="com.jdh.AreaTimeMapper">
+	
+	<!-- 배차시간 리스트 -->
+	<select id="selectList" parameterType="String" resultType="areaTime">
+		SELECT * FROM ${value}
+	</select>
+	
+	<!-- 좌석조회할때 해당버스 시간,총좌석 등등  -->
+	<select id="selectOne" parameterType="hashMap" resultType="areaTime">
+		SELECT * FROM ${area} WHERE bus_name = #{busName}
+	</select>
+	
+	<!-- 티켓insert할때 남은좌석 업데이트 -->
+	<update id="updateAreaTime">
+		<selectKey keyProperty="remaining_seats" resultType="int" order="BEFORE">
+			SELECT COUNT(available_seat) FROM ${bus_name} WHERE available_seat = 0
+		</selectKey>
+		UPDATE ${area_name} 
+		SET remaining_seats = #{remaining_seats}
+		WHERE bus_name = #{bus_name}
+	</update>
+</mapper>

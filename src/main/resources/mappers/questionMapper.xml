@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jdh.QuestionMapper">
+	
+	<select id="selectList" resultType="question">
+		SELECT * FROM questions_tb ORDER BY seq DESC
+	</select>	
+	
+	<select id="selectSearchList" resultType="question">
+		SELECT * FROM 
+		(SELECT ROW_NUMBER() OVER(ORDER BY seq DESC) row_num, questions_tb.* from 
+		questions_tb <include refid="search" /> ) WHERE row_num BETWEEN #{startRow} AND #{endRow}
+	</select>
+	
+	<select id="selectOne" resultType="question">
+		SELECT * FROM questions_tb WHERE seq = #{seq}
+	</select>
+	
+	<select id="totalRowCount" resultType="int">
+		SELECT COUNT(*) FROM questions_tb <include refid="search" />
+	</select>
+	
+	
+	<sql id="search">
+		<if test="keyword != null">
+			<bind name="keyVal" value="'%'+keyword+'%'"/>
+		</if>
+		<where>
+		<choose>
+			<when test='searchType eq "e"'>
+				email LIKE #{keyVal}
+			</when>
+			<when test='searchType eq "c"'>
+				content LIKE #{keyVal}
+			</when>
+		</choose>
+		</where>
+	</sql>
+	
+	<update id="update">
+		UPDATE questions_tb SET answer_content = #{answer_content}, answer_date = sysdate WHERE seq = #{seq}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM questions_tb WHERE seq IN
+		<foreach collection="array" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	
+	
+	<!-- USER -->
+	<insert id="qnaInsert">
+		<selectKey keyProperty="seq" order="BEFORE" resultType="int">
+			SELECT NVL(MAX(seq), 0) + 1 FROM questions_tb
+		</selectKey>
+		INSERT INTO questions_tb VALUES(
+			#{seq},
+			#{email},
+			#{content},
+			sysdate,
+			null,
+			default
+		)
+	</insert>
+	
+	
+</mapper>

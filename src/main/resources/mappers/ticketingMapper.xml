@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jdh.TicketingMapper">
+	
+	<select id="selectList" resultType="ticket">
+		SELECT * FROM ticketing_detail_tb ORDER BY ticketing_number DESC
+	</select>
+	
+	
+	<select id="selectSearchList" resultType="ticket">
+		SELECT * FROM 
+		(SELECT ROW_NUMBER() OVER(ORDER BY ticketing_number DESC) row_num, ticketing_detail_tb.* from 
+		ticketing_detail_tb <include refid="search" /> ) WHERE row_num BETWEEN #{startRow} AND #{endRow}
+	</select>
+	
+	
+	<select id="totalRowCount" resultType="int">
+		SELECT COUNT(*) FROM ticketing_detail_tb <include refid="search" />
+	</select>
+	
+	
+	<sql id="search">
+		<if test="keyword != null">
+			<bind name="keyVal" value="'%'+keyword+'%'"/>
+		</if>
+		<where>
+		<choose>
+			<when test='searchType eq "1" or searchType eq "0"'>
+				ticketing_status = #{searchType} AND departure_date LIKE #{keyVal}
+			</when>
+		</choose>
+		</where>
+	</sql>
+	
+	
+	<!-- admin 예매내역 삭제 -->
+	<delete id="delete">
+		DELETE FROM ticketing_detail_tb WHERE ticketing_number IN
+		<foreach collection="array" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- user & admin 예매 취소 -->	
+	<update id="updateTicket">
+		UPDATE ticketing_detail_tb SET ticketing_status = 0 WHERE ticketing_number = #{ticketing_number}
+	</update>
+	
+	<!-- user & admin 예매내역 가져오기 -->
+	<select id="selectMyTicket" resultType="ticket">
+		SELECT * FROM ticketing_detail_tb WHERE ticketing_number = #{ticketing_number}
+	</select>
+	
+	
+	<!-- user 예매내역  -->
+	<select id="selectMyTicketList" resultType="ticket">
+		SELECT * FROM ticketing_detail_tb WHERE email = #{email} ORDER BY ticketing_number DESC
+	</select>
+	
+	
+	<!-- user 티켓 인서트 -->
+	<insert id="insertTicket">
+		<selectKey keyProperty="ticketing_number" resultType="int" order="BEFORE">
+		SELECT 
+		TO_CHAR(sysdate, 'yymmdd') || NVL(TO_CHAR(MAX(SUBSTR(TICKETING_NUMBER,7))),'0000') + 1 
+		FROM ticketing_detail_tb WHERE SUBSTR(ticketing_number, 1, 6) = TO_CHAR(sysdate, 'yymmdd')
+		</selectKey>
+			INSERT INTO ticketing_detail_tb VALUES 
+			(
+				#{ticketing_number},
+				#{email},
+				#{departure_area},
+				#{destination},
+				#{number_of_tickets},
+				#{seat_number},
+				#{departure_date},
+				#{total_price},
+				1,
+				#{bus_name},
+				#{area_name}
+			)
+	</insert>
+	
+	
+</mapper>

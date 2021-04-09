@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	
+	<typeAliases>
+		<typeAlias type="com.jdh.vo.TicketingVO" alias="ticket"/>
+		<typeAlias type="com.jdh.vo.MemberVO" alias="member"/>
+		<typeAlias type="com.jdh.vo.QuestionVO" alias="question"/>
+		<typeAlias type="com.jdh.vo.AreaTimeVO" alias="areaTime"/>
+		<typeAlias type="com.jdh.vo.SeatVO" alias="seat"/>
+		<typeAlias type="com.jdh.vo.BusTerminalVO" alias="busTerminal"/>
+	</typeAliases>
+</configuration>

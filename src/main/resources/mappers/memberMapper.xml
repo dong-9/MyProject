@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jdh.MemberMapper">
+	
+	<!-- common -->
+	<select id="selectOneUser" parameterType="String" resultType="com.jdh.security.CustomUserDetails">
+		SELECT * FROM member_tb WHERE email = #{value}
+	</select>
+	
+	<select id="selectOne" resultType="member">
+		SELECT * FROM member_tb WHERE 
+		<choose>
+			<when test="email != null">
+				email = #{email}
+			</when>
+			<when test="phone != null">
+				phone = #{phone}
+			</when>
+		</choose>
+	</select>
+	
+	
+	<!-- admin -->
+	<select id="selectSearchList" resultType="member">
+		SELECT * FROM 
+		(SELECT ROW_NUMBER() OVER(ORDER BY registration_date DESC) row_num, member_tb.* from 
+		member_tb <include refid="search" /> ) WHERE row_num BETWEEN #{startRow} AND #{endRow}
+	</select>
+	
+	
+	<select id="totalRowCount" resultType="int">
+		SELECT COUNT(*) FROM member_tb <include refid="search" />
+	</select>
+	
+	<sql id="search">
+		<if test="keyword != null">
+			<bind name="keyVal" value="'%'+keyword+'%'"/>
+		</if>
+		<where>
+		<choose>
+			<when test='searchType eq "e"'>
+				email LIKE #{keyVal}
+			</when>
+			<when test='searchType eq "p"'>
+				phone LIKE #{keyVal}
+			</when>
+		</choose>
+		</where>
+	</sql>
+	
+	<update id="update">
+		UPDATE member_tb
+		<trim prefix="SET" suffixOverrides=",">
+			<if test="password != null">password = #{password},</if>
+			<if test="phone != null">phone = #{phone},</if>
+			<if test="birthd != null">birthd = #{birthd},</if>
+			<if test="point != null">point = #{point},</if>
+		</trim>
+		WHERE email = #{email}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM member_tb WHERE email IN
+		<foreach collection="array" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<update id="updateMinPoint">
+		UPDATE member_tb SET point = point - #{total_price} WHERE email = #{email}
+	</update>
+	
+	<update id="updateAddPoint">
+		UPDATE member_TB SET point = point + #{total_price} WHERE email = #{email}
+	</update>
+	
+	
+	<!-- user -->
+	<select id="selectCountMyTicket" parameterType="String" resultType="int">
+		SELECT COUNT(email) FROM ticketing_detail_tb WHERE email = #{value}
+	</select>
+	
+	
+	<insert id="insertMemberInfo">
+		INSERT INTO member_tb VALUES(
+		#{email}, #{password}, #{phone},
+    	#{birthd}, #{point}, sysdate, default, default)
+	</insert>
+	
+	<update id="updatePassword">
+		UPDATE member_tb SET password = #{password} WHERE email = #{email}
+	</update>
+
+	<update id="updatePhone">
+		UPDATE member_tb SET phone = #{phone} WHERE email = #{email}
+	</update>
+	
+	<delete id="deleteUser">
+		DELETE FROM member_tb WHERE email = #{email}
+	</delete>
+	
+	
+	
+	
+</mapper>

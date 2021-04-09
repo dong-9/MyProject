@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jdh.SeatMapper">
+	
+	<!-- user 좌석 리스트 -->
+	<select id="selectList" parameterType="java.lang.String" resultType="seat">
+		SELECT * FROM ${value} ORDER BY seat_number ASC
+	</select>
+	
+	<!-- 예매하려는 좌석이 있는지 확인 -->
+	<select id="selectCountSeat" resultType="int">
+		SELECT COUNT(available_seat) FROM ${bus_name}
+		WHERE  available_seat = 1 AND
+		seat_number IN 
+		<foreach collection="seatNumbers" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach> 
+	</select>
+	
+	<!-- 예매insert시 좌석도 업데이트 -->
+	<update id="updateSeat">
+		UPDATE ${bus_name} 
+		SET 
+			available_seat = 1,
+			email = #{email}
+		WHERE seat_number IN 
+		<foreach collection="seatNumbers" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+	<!-- user & admin 예매취소시 좌석 업데이트 -->
+	<update id="updateSeatCancle">
+		UPDATE ${bus_name} 
+		SET 
+			available_seat = 0,
+			email = null
+		WHERE seat_number IN 
+		<foreach collection="seatNumbers" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	
+	
+</mapper>

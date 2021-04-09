@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:s="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<!-- 인증 -->
+	<bean id="userLoginAuthenticationProvider" class="com.jdh.security.UserLoginAuthenticationProvider" />
+	<!-- 로그인 실패 -->
+	<bean id="userLoginFailHandler" class="com.jdh.security.UserLoginFailHandler" />
+	<!-- 로그인 성공 -->
+	<bean id="userLoginSuccessHandler" class="com.jdh.security.UserLoginSuccessHandler" /> 
+
+	<s:http auto-config="true" use-expressions="true">
+		<s:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/login" access="isAnonymous()"/>
+		<s:intercept-url pattern="/logout" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/change*" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/qnaRegister" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/qnaInsert" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/ticketList" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/seat" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/insertTicket" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/myPage" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/changeNumber" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/changePW" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')"/>
+		<s:intercept-url pattern="/**" access="permitAll"/>
+		
+		
+		<!-- login-page="/login" -->
+		<s:form-login 
+			username-parameter="email"
+			password-parameter="password"
+			login-page="/login"
+			login-processing-url="/login"
+			authentication-failure-handler-ref="userLoginFailHandler"
+			authentication-success-handler-ref="userLoginSuccessHandler" />
+		
+		<!-- Logout -->
+		<s:logout
+			logout-url="/logout"
+			logout-success-url="/main"
+			invalidate-session="true"
+			delete-cookies="true"/>
+	</s:http>
+	
+	<s:global-method-security secured-annotations="enabled" pre-post-annotations="enabled"/>	
+	<s:authentication-manager>
+		<s:authentication-provider ref="userLoginAuthenticationProvider">
+		</s:authentication-provider>
+	</s:authentication-manager>
+	
+</beans>
